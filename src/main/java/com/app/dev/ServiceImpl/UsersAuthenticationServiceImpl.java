@@ -37,7 +37,7 @@ public class UsersAuthenticationServiceImpl implements UsersAuthenticationServic
 	public Response<Users> signUp(RegisterDto input) {
 		Response<Users> response = new Response<Users>();
 		try {
-			
+
 			Users users = repository.findByUserEmail(input.getEmail());
 			if (users != null) {
 				response.setCode(600);
@@ -45,23 +45,21 @@ public class UsersAuthenticationServiceImpl implements UsersAuthenticationServic
 				response.setMessage("User already present please try logging in / Verifying the Account");
 				return response;
 			}
-			
-				Users user = new Users(input.getEmail() , input.getUsername() , input.getPassword());
-				user.setEnabled(false);
-				user.setVerificationCode(generateVerificationCode());
-				user.setVerificationexpire(LocalDateTime.now().plusMinutes(3));
-				
-				user = repository.save(user);
-				sendVerificationCode(user);
-				
-				
-				response.setCode(200);
-				response.setStatus("ok");
-				response.setMessage("success");
-				response.setData(user);
 
-				return response;
-			
+			Users user = new Users(input.getEmail(), input.getUsername(), input.getPassword());
+			user.setEnabled(false);
+			user.setVerificationCode(generateVerificationCode());
+			user.setVerificationexpire(LocalDateTime.now().plusMinutes(3));
+
+			user = repository.save(user);
+			sendVerificationCode(user);
+
+			response.setCode(200);
+			response.setStatus("ok");
+			response.setMessage("success");
+			response.setData(user);
+
+			return response;
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -110,36 +108,47 @@ public class UsersAuthenticationServiceImpl implements UsersAuthenticationServic
 
 	@Override
 	public Response<Users> verifyUser(VerifyUser input) {
-		Response<Users> response = new Response<Users>();
+		Response<Users> response = new Response<>();
 		try {
-			System.out.println(input.getEmail() + "aaaaaaaaaaaaaaaaaaaa" + input.getVerificationcode());
-			Users user = repository.findByUserEmail(input.getEmail());
 
-			if (user != null) {
-				if (user.getVerificationexpire().isBefore(LocalDateTime.now())) {
-					response.setCode(600);
-					response.setStatus("Failed");
-					response.setMessage("Verification code expired");
-					return response;
-				}
+			if (input == null || input.getEmail() == null || input.getVerificationcode() == null) {
+				response.setCode(400);
+				response.setStatus("Failed");
+				response.setMessage("Invalid input data");
+				return response;
 			}
 
-			if ( user.getVerificationCode() == null || !user.getVerificationCode().equals(input.getVerificationcode())) {
+			Users user = repository.findByUserEmail(input.getEmail());
+			if (user == null) {
+				response.setCode(404);
+				response.setStatus("Failed");
+				response.setMessage("User not found");
+				return response;
+			}
+			if (user.getVerificationCode() == null || !user.getVerificationCode().equals(input.getVerificationcode())) {
 				response.setCode(601);
 				response.setStatus("Failed");
-				response.setMessage("Invalid verification");
+				response.setMessage("Invalid verification code");
+				System.out.println("Response after invalid code check: " + response.getMessage());
+				return response;
+			}
+
+			if (user.getVerificationexpire() == null || user.getVerificationexpire().isBefore(LocalDateTime.now())) {
+				response.setCode(410);
+				response.setStatus("Failed");
+				response.setMessage("Verification code expired");
 				return response;
 			}
 
 			user.setEnabled(true);
 			user.setVerificationCode(null);
 			user.setVerificationexpire(null);
-			user = repository.save(user);
 
+			Users updatedUser = repository.save(user);
 			response.setCode(200);
-			response.setStatus("ok");
-			response.setMessage("success");
-			response.setData(user);
+			response.setStatus("Success");
+			response.setMessage("User verified successfully");
+			response.setData(updatedUser);
 			return response;
 
 		} catch (Exception e) {
@@ -147,8 +156,8 @@ public class UsersAuthenticationServiceImpl implements UsersAuthenticationServic
 			response.setCode(500);
 			response.setStatus("Failed");
 			response.setMessage("Internal server error");
+			return response;
 		}
-		return response;
 	}
 
 	@Override
@@ -166,7 +175,7 @@ public class UsersAuthenticationServiceImpl implements UsersAuthenticationServic
 				}
 			}
 			user.setVerificationCode(generateVerificationCode());
-			
+
 			System.out.println(user.getVerificationCode());
 			user.setVerificationexpire(LocalDateTime.now().plusMinutes(3));
 			sendVerificationCode(user);

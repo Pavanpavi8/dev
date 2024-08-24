@@ -32,7 +32,7 @@ public class UsersController {
 	@PostMapping("/register")
 	public Response<Users> register(@RequestBody RegisterDto input) {
 		Response<Users> response = new Response<Users>();
-		
+
 		if (input.getEmail() == null) {
 			response.setCode(600);
 			response.setStatus("Failed");
@@ -63,7 +63,7 @@ public class UsersController {
 				response.setMessage("user not found");
 				return response;
 			}
-			
+
 			String jwtToken = jwtService.generateToken(user);
 
 			response.setCode(200);
@@ -80,16 +80,8 @@ public class UsersController {
 
 	@PostMapping("/verify")
 	public Response<Users> verify(@RequestBody VerifyUser input) {
-		Response<Users> response = new Response<Users>();
-		try {
-			authenticationService.verifyUser(input);
-			response.setCode(200);
-			response.setData(authenticationService.verifyUser(input).getData());
-			response.setStatus("success");
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return response;
+		return authenticationService.verifyUser(input);
+
 	}
 
 	@PostMapping("/resend/{email}")
