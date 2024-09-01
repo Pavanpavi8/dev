@@ -50,13 +50,16 @@ public class AppConfig {
 	
 	@Bean
 	public UrlBasedCorsConfigurationSource corsConfiguration() {
-		CorsConfiguration config = new CorsConfiguration();
-		config.setAllowedMethods(List.of("GET" ,"POST" , "PUT" , "DELETE"));
-		config.setAllowedOriginPatterns(List.of("/**"));
-		config.setAllowedHeaders(List.of("Authorization" , "Content-Type"));
-		
-		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-		source.registerCorsConfiguration("/**", config);
-		return  source;
+	    CorsConfiguration config = new CorsConfiguration();
+	    config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
+	    config.setAllowedOriginPatterns(List.of("*")); 
+	    config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+	    config.setAllowCredentials(true); 
+		config.addExposedHeader("Authorization");
+
+	    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+	    source.registerCorsConfiguration("/**", config);
+	    return source;
 	}
+
 }
