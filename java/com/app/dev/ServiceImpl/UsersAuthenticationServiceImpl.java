@@ -7,6 +7,7 @@ import java.util.Random;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -89,8 +90,9 @@ public class UsersAuthenticationServiceImpl implements UsersAuthenticationServic
 				response.setMessage("Account not verified , Please verify");
 				return response;
 			}
-			authenticationManager
+			Authentication authentication = authenticationManager
 					.authenticate(new UsernamePasswordAuthenticationToken(input.getuserEmail(), input.getPassword()));
+			System.out.println(authentication.getAuthorities()+"000000000000000000000000");
 			response.setCode(200);
 			response.setStatus("ok");
 			response.setMessage("success");
